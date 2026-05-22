@@ -259,4 +259,18 @@ public class CicloMenstrualService {
 
 		return (int) (dias % duracaoCiclo) + 1;
 	}
+
+	public List<CicloMenstrualResponse> buscarCalendario(
+			UUID usuarioId,
+			LocalDate inicio,
+			LocalDate fim
+	) {
+		Usuario usuario = usuarioRepository.findById(usuarioId)
+				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+		return cicloRepository.buscarCiclosNoPeriodo(usuario, inicio, fim)
+				.stream()
+				.map(this::mapToResponse)
+				.collect(Collectors.toList());
+	}
 }
