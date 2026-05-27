@@ -23,4 +23,5 @@ public class DashboardCicloResponse {
 	private LocalDate previsaoOvulacao;
 	private LocalDate janelaFertilInicio;
 	private LocalDate janelaFertilFim;
+	private String mensagemDetalhadaFase;
 }

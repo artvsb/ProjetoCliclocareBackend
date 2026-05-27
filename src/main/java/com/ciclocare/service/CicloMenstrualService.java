@@ -31,8 +31,15 @@ public class CicloMenstrualService {
     public CicloMenstrualResponse criar(UUID usuarioId, CicloMenstrualRequest request) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
 		int mediaDuracaoCiclo;
 		int mediaDuracaoMenstruacao;
+		int duracaoCiclo = request.getDuracaoCiclo() != null
+				? request.getDuracaoCiclo()
+				: 28;
+		int duracaoMenstruacao = request.getDuracaoMenstruacao() != null
+				? request.getDuracaoMenstruacao()
+				: 5;
 
 		List<CicloMenstrual> ultimosCiclos =
 				cicloRepository.findTop3ByUsuarioOrderByDataInicioDesc(usuario);
@@ -50,27 +57,27 @@ public class CicloMenstrualService {
 		LocalDate dataFim = request.getDataFim();
 
 		if (dataFim == null) {
-			dataFim = dataInicio.plusDays(request.getDuracaoMenstruacao() - 1);
+			dataFim = dataInicio.plusDays(duracaoMenstruacao - 1);
 		}
 
 		if (ultimosCiclos.isEmpty()) {
-			mediaDuracaoCiclo = request.getDuracaoCiclo();
+			mediaDuracaoCiclo = duracaoCiclo;
 		} else {
 			mediaDuracaoCiclo = Math.round(
 					(float) ultimosCiclos.stream()
 							.mapToInt(CicloMenstrual::getDuracaoCiclo)
 							.average()
-							.orElse(request.getDuracaoCiclo()));
+							.orElse(duracaoCiclo));
 		}
 
 		if (ultimosCiclos.isEmpty()) {
-			mediaDuracaoMenstruacao = request.getDuracaoMenstruacao();
+			mediaDuracaoMenstruacao = duracaoMenstruacao;
 		} else {
 			mediaDuracaoMenstruacao = Math.round(
 					(float) ultimosCiclos.stream()
 							.mapToInt(CicloMenstrual::getDuracaoMenstruacao)
 							.average()
-							.orElse(request.getDuracaoMenstruacao())
+							.orElse(duracaoMenstruacao)
 			);
 		}
 		LocalDate proximaPrevisao = dataInicio.plusDays(mediaDuracaoCiclo);
@@ -122,22 +129,56 @@ public class CicloMenstrualService {
         return mapToResponse(ciclo);
     }
 
-    @Transactional
-    public CicloMenstrualResponse atualizar(UUID id, CicloMenstrualRequest request) {
-        CicloMenstrual ciclo = cicloRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ciclo menstrual não encontrado"));
+	@Transactional
+	public CicloMenstrualResponse atualizar(UUID id, CicloMenstrualRequest request) {
+		CicloMenstrual ciclo = cicloRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Ciclo menstrual não encontrado"));
 
-        ciclo.setDataInicio(request.getDataInicio());
-        ciclo.setDataFim(request.getDataFim());
-        ciclo.setDuracaoCiclo(request.getDuracaoCiclo());
-        ciclo.setDuracaoMenstruacao(request.getDuracaoMenstruacao());
-        ciclo.setUltimaMenstruacao(request.getUltimaMenstruacao());
-        ciclo.setProximaPrevisao(request.getUltimaMenstruacao().plusDays(request.getDuracaoCiclo()));
-        ciclo.setIntensidadeFluxo(request.getIntensidadeFluxo());
+		LocalDate dataInicio = request.getDataInicio();
 
-        CicloMenstrual cicloAtualizado = cicloRepository.save(ciclo);
-        return mapToResponse(cicloAtualizado);
-    }
+		if (dataInicio == null) {
+			dataInicio = request.getUltimaMenstruacao();
+		}
+
+		if (dataInicio == null) {
+			throw new RuntimeException("Data de início ou última menstruação é obrigatória");
+		}
+
+		int duracaoCiclo = request.getDuracaoCiclo() != null
+				? request.getDuracaoCiclo()
+				: ciclo.getDuracaoCiclo();
+
+		int duracaoMenstruacao = request.getDuracaoMenstruacao() != null
+				? request.getDuracaoMenstruacao()
+				: ciclo.getDuracaoMenstruacao();
+
+		LocalDate dataFim = request.getDataFim();
+
+		if (dataFim == null) {
+			dataFim = dataInicio.plusDays(duracaoMenstruacao - 1);
+		}
+
+		LocalDate proximaPrevisao = dataInicio.plusDays(duracaoCiclo);
+		LocalDate previsaoOvulacao = proximaPrevisao.minusDays(14);
+		LocalDate janelaFertilInicio = previsaoOvulacao.minusDays(5);
+		LocalDate janelaFertilFim = previsaoOvulacao.plusDays(1);
+
+		ciclo.setDataInicio(dataInicio);
+		ciclo.setDataFim(dataFim);
+		ciclo.setUltimaMenstruacao(dataInicio);
+		ciclo.setDuracaoCiclo(duracaoCiclo);
+		ciclo.setDuracaoMenstruacao(duracaoMenstruacao);
+		ciclo.setProximaPrevisao(proximaPrevisao);
+		ciclo.setPrevisaoOvulacao(previsaoOvulacao);
+		ciclo.setJanelaFertilInicio(janelaFertilInicio);
+		ciclo.setJanelaFertilFim(janelaFertilFim);
+		if (request.getIntensidadeFluxo() != null) {
+			ciclo.setIntensidadeFluxo(request.getIntensidadeFluxo());
+		}
+
+		CicloMenstrual cicloAtualizado = cicloRepository.save(ciclo);
+		return mapToResponse(cicloAtualizado);
+	}
 
     @Transactional
     public void deletar(UUID id) {
@@ -157,6 +198,9 @@ public class CicloMenstrualService {
                 .ultimaMenstruacao(ciclo.getUltimaMenstruacao())
                 .proximaPrevisao(ciclo.getProximaPrevisao())
                 .intensidadeFluxo(ciclo.getIntensidadeFluxo())
+				.previsaoOvulacao(ciclo.getPrevisaoOvulacao())
+				.janelaFertilInicio(ciclo.getJanelaFertilInicio())
+				.janelaFertilFim(ciclo.getJanelaFertilFim())
                 .criadoEm(ciclo.getCriadoEm())
                 .build();
     }
@@ -227,6 +271,7 @@ public class CicloMenstrualService {
 				.previsaoOvulacao(previsaoOvulacao)
 				.janelaFertilInicio(janelaFertilInicio)
 				.janelaFertilFim(janelaFertilFim)
+				.mensagemDetalhadaFase(gerarMensagemDetalhada(faseCiclo, diaCiclo))
 				.build();
 	}
 
@@ -259,4 +304,33 @@ public class CicloMenstrualService {
 
 		return (int) (dias % duracaoCiclo) + 1;
 	}
+
+	public String gerarMensagemDetalhada(FaseCiclo faseCiclo, Integer diaCiclo) {
+		return switch (faseCiclo) {
+			case MENSTRUAL -> switch (diaCiclo) {
+				case 1 -> "Hoje pode ser o início do fluxo menstrual. É comum sentir mais cólicas, cansaço ou sensibilidade. Tente respeitar seu ritmo e evitar se cobrar demais.";
+				case 2 -> "O fluxo ainda pode estar mais intenso. Seu corpo está em processo de renovação, então priorize descanso, hidratação e atividades mais leves.";
+				case 3 -> "A fase menstrual continua, mas algumas mulheres já começam a sentir uma leve melhora na energia. Observe seus sinais e cuide do seu conforto.";
+				case 4 -> "Seu fluxo pode começar a diminuir. Aos poucos, o corpo se prepara para retomar mais disposição nos próximos dias.";
+				case 5 -> "Você pode estar chegando ao fim da menstruação. É um bom momento para voltar devagar à rotina, sem ignorar os sinais do corpo.";
+				default -> "Você ainda está na fase menstrual. Continue respeitando seu ritmo, mantendo-se hidratada e priorizando autocuidado.";
+			};
+
+			case FOLICULAR -> switch (diaCiclo % 3) {
+				case 1 -> "Na fase folicular, sua energia tende a aumentar. Pode ser um bom momento para organizar tarefas, estudar e iniciar novos planos.";
+				case 2 -> "Seu corpo está se preparando para a ovulação. Você pode perceber mais disposição, clareza mental e vontade de se movimentar.";
+				default -> "A fase folicular costuma trazer mais vitalidade. Aproveite esse período para avançar em atividades que exigem foco e energia.";
+			};
+
+			case OVULACAO -> "Você está no período de ovulação, quando a fertilidade tende a estar mais alta. Observe sinais como aumento da libido, muco cervical mais elástico e mais energia.";
+
+			case LUTEA -> switch (diaCiclo % 3) {
+				case 1 -> "Na fase lútea, o corpo começa a se preparar para uma possível menstruação. Pode ser interessante desacelerar um pouco.";
+				case 2 -> "É comum sentir mais fome, retenção de líquido ou alterações de humor nessa fase. Observe seus padrões com gentileza.";
+				default -> "A fase lútea pode pedir mais cuidado emocional e físico. Priorize rotina, alimentação equilibrada e descanso.";
+			};
+		};
+	}
+
+
 }
