@@ -1,4 +1,4 @@
-package com.ciclocare.model;
+package com.ciclocare.entity;
 
 import jakarta.persistence.*;
 
