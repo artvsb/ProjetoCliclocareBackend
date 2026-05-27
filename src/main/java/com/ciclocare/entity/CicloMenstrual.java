@@ -33,17 +33,28 @@ public class CicloMenstrual {
     @Column(nullable = false)
     private LocalDate dataFim;
 
+    @Builder.Default
     @Column(nullable = false)
     private Integer duracaoCiclo = 28;
 
+    @Builder.Default
     @Column(nullable = false)
     private Integer duracaoMenstruacao = 5;
 
     @Column(nullable = false)
     private LocalDate ultimaMenstruacao;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate proximaPrevisao;
+
+    @Column(nullable = false)
+    private LocalDate previsaoOvulacao;
+
+    @Column(nullable = false)
+    private LocalDate janelaFertilInicio;
+
+    @Column(nullable = false)
+    private LocalDate janelaFertilFim;
 
     @Column
     private String intensidadeFluxo;
@@ -51,13 +62,4 @@ public class CicloMenstrual {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadoEm;
-
-	@Column
-	private LocalDate previsaoOvulacao;
-
-	@Column
-	private LocalDate janelaFertilInicio;
-
-	@Column
-	private LocalDate janelaFertilFim;
 }
