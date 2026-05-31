@@ -1,6 +1,6 @@
 package com.ciclocare.service;
 
-import com.ciclocare.model.Alarme;
+import com.ciclocare.entity.Alarme;
 import com.ciclocare.repository.AlarmeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

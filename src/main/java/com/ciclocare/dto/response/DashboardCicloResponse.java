@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class DashboardCicloResponse {
 	private Integer diaCiclo;
 	private FaseCiclo faseCiclo;
-	private String mensagem;
+	private String mensagem; // remover
 	private LocalDate ultimaMenstruacao;
 	private Integer duracaoCiclo;
 	private Integer duracaoMenstruacao;
@@ -25,4 +25,5 @@ public class DashboardCicloResponse {
 	private LocalDate janelaFertilFim;
 	private Long quantidadeCiclos;
 	private boolean menosDe3Ciclos;
+	private String mensagemDetalhadaFase;
 }

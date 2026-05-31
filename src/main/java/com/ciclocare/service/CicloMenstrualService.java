@@ -32,8 +32,15 @@ public class CicloMenstrualService {
     public CicloMenstrualResponse criar(UUID usuarioId, CicloMenstrualRequest request) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
 		int mediaDuracaoCiclo;
 		int mediaDuracaoMenstruacao;
+		int duracaoCiclo = request.getDuracaoCiclo() != null
+				? request.getDuracaoCiclo()
+				: 28;
+		int duracaoMenstruacao = request.getDuracaoMenstruacao() != null
+				? request.getDuracaoMenstruacao()
+				: 5;
 
 		List<CicloMenstrual> ultimosCiclos =
 				cicloRepository.findTop3ByUsuarioOrderByDataInicioDesc(usuario);
@@ -176,12 +183,6 @@ public class CicloMenstrualService {
 				.orElseThrow(() ->
 						new ResourceNotFoundException("Usuária não encontrada."));
 
-		long quantidadeCiclos =
-				cicloRepository.countByUsuario(usuaria);
-
-		boolean menosDe3Ciclos =
-				quantidadeCiclos < 3;
-
 		List<CicloMenstrual> ultimosCiclos =
 				cicloRepository.findTop3ByUsuarioOrderByDataInicioDesc(usuaria);
 
@@ -234,8 +235,6 @@ public class CicloMenstrualService {
 				.previsaoOvulacao(previsaoOvulacao)
 				.janelaFertilInicio(janelaFertilInicio)
 				.janelaFertilFim(janelaFertilFim)
-				.quantidadeCiclos(quantidadeCiclos)
-				.menosDe3Ciclos(menosDe3Ciclos)
 				.build();
 	}
 
@@ -268,6 +267,35 @@ public class CicloMenstrualService {
 
 		return (int) (dias % duracaoCiclo) + 1;
 	}
+
+	public String gerarMensagemDetalhada(FaseCiclo faseCiclo, Integer diaCiclo) {
+		return switch (faseCiclo) {
+			case MENSTRUAL -> switch (diaCiclo) {
+				case 1 -> "Hoje pode ser o início do fluxo menstrual. É comum sentir mais cólicas, cansaço ou sensibilidade. Tente respeitar seu ritmo e evitar se cobrar demais.";
+				case 2 -> "O fluxo ainda pode estar mais intenso. Seu corpo está em processo de renovação, então priorize descanso, hidratação e atividades mais leves.";
+				case 3 -> "A fase menstrual continua, mas algumas mulheres já começam a sentir uma leve melhora na energia. Observe seus sinais e cuide do seu conforto.";
+				case 4 -> "Seu fluxo pode começar a diminuir. Aos poucos, o corpo se prepara para retomar mais disposição nos próximos dias.";
+				case 5 -> "Você pode estar chegando ao fim da menstruação. É um bom momento para voltar devagar à rotina, sem ignorar os sinais do corpo.";
+				default -> "Você ainda está na fase menstrual. Continue respeitando seu ritmo, mantendo-se hidratada e priorizando autocuidado.";
+			};
+
+			case FOLICULAR -> switch (diaCiclo % 3) {
+				case 1 -> "Na fase folicular, sua energia tende a aumentar. Pode ser um bom momento para organizar tarefas, estudar e iniciar novos planos.";
+				case 2 -> "Seu corpo está se preparando para a ovulação. Você pode perceber mais disposição, clareza mental e vontade de se movimentar.";
+				default -> "A fase folicular costuma trazer mais vitalidade. Aproveite esse período para avançar em atividades que exigem foco e energia.";
+			};
+
+			case OVULACAO -> "Você está no período de ovulação, quando a fertilidade tende a estar mais alta. Observe sinais como aumento da libido, muco cervical mais elástico e mais energia.";
+
+			case LUTEA -> switch (diaCiclo % 3) {
+				case 1 -> "Na fase lútea, o corpo começa a se preparar para uma possível menstruação. Pode ser interessante desacelerar um pouco.";
+				case 2 -> "É comum sentir mais fome, retenção de líquido ou alterações de humor nessa fase. Observe seus padrões com gentileza.";
+				default -> "A fase lútea pode pedir mais cuidado emocional e físico. Priorize rotina, alimentação equilibrada e descanso.";
+			};
+		};
+	}
+
+
 
 	public List<CicloMenstrualResponse> buscarCalendario(
 			UUID usuarioId,
