@@ -32,4 +32,6 @@ public interface CicloMenstrualRepository extends JpaRepository<CicloMenstrual, 
 			ORDER BY c.dataInicio ASC
 			""")
 	List<CicloMenstrual> buscarCiclosNoPeriodo(Usuario usuario, LocalDate inicio, LocalDate fim);
+
+	long countByUsuario(Usuario usuario);
 }

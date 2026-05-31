@@ -23,4 +23,6 @@ public class DashboardCicloResponse {
 	private LocalDate previsaoOvulacao;
 	private LocalDate janelaFertilInicio;
 	private LocalDate janelaFertilFim;
+	private Long quantidadeCiclos;
+	private boolean menosDe3Ciclos;
 }

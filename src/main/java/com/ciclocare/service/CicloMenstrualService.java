@@ -27,6 +27,7 @@ public class CicloMenstrualService {
     private final CicloMenstrualRepository cicloRepository;
 	private final UsuarioRepository usuarioRepository;
 
+
     @Transactional
     public CicloMenstrualResponse criar(UUID usuarioId, CicloMenstrualRequest request) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -175,6 +176,12 @@ public class CicloMenstrualService {
 				.orElseThrow(() ->
 						new ResourceNotFoundException("Usuária não encontrada."));
 
+		long quantidadeCiclos =
+				cicloRepository.countByUsuario(usuaria);
+
+		boolean menosDe3Ciclos =
+				quantidadeCiclos < 3;
+
 		List<CicloMenstrual> ultimosCiclos =
 				cicloRepository.findTop3ByUsuarioOrderByDataInicioDesc(usuaria);
 
@@ -227,6 +234,8 @@ public class CicloMenstrualService {
 				.previsaoOvulacao(previsaoOvulacao)
 				.janelaFertilInicio(janelaFertilInicio)
 				.janelaFertilFim(janelaFertilFim)
+				.quantidadeCiclos(quantidadeCiclos)
+				.menosDe3Ciclos(menosDe3Ciclos)
 				.build();
 	}
 
