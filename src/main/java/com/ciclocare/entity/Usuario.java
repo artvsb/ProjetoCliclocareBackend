@@ -52,4 +52,6 @@ public class Usuario {
 
     @Column(columnDefinition = "boolean default true")
     private Boolean ativo = true;
+
+	private Boolean modoGestante;
 }

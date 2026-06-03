@@ -7,9 +7,11 @@ import com.ciclocare.dto.response.DashboardCicloResponse;
 import com.ciclocare.dto.response.ModoGestanteResponse;
 import com.ciclocare.entity.Usuario;
 import com.ciclocare.service.CicloMenstrualService;
+import com.ciclocare.service.GestanteService;
 import com.ciclocare.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -29,6 +31,7 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 	private final CicloMenstrualService cicloMenstrualService;
+	private final GestanteService gestanteService;
 
     @PostMapping("/registrar")
     public ResponseEntity<ApiResponse> registrar(
@@ -106,7 +109,7 @@ public class UsuarioController {
 
 	@GetMapping("/{id}/modo-gestante")
 	public ModoGestanteResponse exibirModoGestante(@PathVariable UUID id) {
-		return cicloMenstrualService.exibirModoGestante(id);
+		return gestanteService.exibirModoGestante(id);
 	}
 
 }

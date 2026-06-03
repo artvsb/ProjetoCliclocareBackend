@@ -274,67 +274,6 @@ public class CicloMenstrualService {
 		return (int) (dias % duracaoCiclo) + 1;
 	}
 
-	public ModoGestanteResponse exibirModoGestante(UUID idUsuaria) {
-		// buscando a usuária e o último ciclo para ter como base
-		Usuario usuaria = usuarioRepository.findById(idUsuaria)
-				.orElseThrow(() ->
-						new ResourceNotFoundException("Usuária não encontrada"));
-
-		List<CicloMenstrual> ultimosCiclos =
-				cicloRepository.findTop3ByUsuarioOrderByDataInicioDesc(usuaria);
-
-		if (ultimosCiclos.isEmpty()) {
-			throw new ResourceNotFoundException("Nenhum ciclo encontrado.");
-		}
-
-		CicloMenstrual cicloAtual = ultimosCiclos.get(0);
-
-		// cálculos abaixo
-		LocalDate ultimaMenstruacao = cicloAtual.getDataInicio();
-		LocalDate hoje = LocalDate.now();
-
-		long diasGravidez = ChronoUnit.DAYS.between(ultimaMenstruacao, hoje);
-
-		int semanasCompletas = (int) diasGravidez / 7;
-		int meses = semanasCompletas / 4;
-		int semanasMes = semanasCompletas % 4;
-		int diasSemana = (int) diasGravidez % 7;
-
-		int semanaAtual = semanasCompletas + 1;
-
-		int diasGravidezTotal = 280;
-		int diasRestantes = Math.max(0, diasGravidezTotal - (int) diasGravidez);
-
-		int semanasRestantes = diasRestantes / 7;
-		int diasRestantesSemana = diasRestantes % 7;
-
-		LocalDate previsaoParto = ultimaMenstruacao.plusDays(280);
-
-		String textoMeses = meses == 1
-				? "1 mês"
-				: meses + " meses";
-
-		String textoSemanas = semanasMes == 1
-				? "1 semana"
-				: semanasMes + " semanas";
-		String mensagemSecundaria = textoMeses + " e " + textoSemanas;
-
-		return ModoGestanteResponse.builder()
-				.semanaAtual(semanaAtual)
-				.semanasCompletas(semanasCompletas)
-				.diasSemana(diasSemana)
-				.diasGravidez((int) diasGravidez)
-				.diasRestantes(diasRestantes)
-				.previsaoParto(previsaoParto)
-				.mensagemPrincipal("Você está na " + semanaAtual + "ª semana de gestação")
-				.meses(meses)
-				.semanasMes(semanasMes)
-				.semanasRestantes(semanasRestantes)
-				.diasRestantesSemana(diasRestantesSemana)
-				.mensagemSecundaria(mensagemSecundaria)
-				.build();
-	}
-
 	public String gerarMensagemDetalhada(FaseCiclo faseCiclo, Integer diaCiclo) {
 		return switch (faseCiclo) {
 			case MENSTRUAL -> switch (diaCiclo) {

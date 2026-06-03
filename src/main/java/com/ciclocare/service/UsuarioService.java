@@ -3,6 +3,7 @@ package com.ciclocare.service;
 import com.ciclocare.dto.request.CicloMenstrualRequest;
 import com.ciclocare.dto.request.RegisterRequest;
 import com.ciclocare.dto.request.UpdateProfileRequest;
+import com.ciclocare.dto.response.RecomendacaoResponse;
 import com.ciclocare.dto.response.UsuarioResponse;
 import com.ciclocare.entity.CicloMenstrual;
 import com.ciclocare.entity.Usuario;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -106,4 +108,9 @@ public class UsuarioService {
                 .ativo(usuario.getAtivo())
                 .build();
     }
+
+	public Usuario buscarEntidadePorId(UUID id) {
+		return usuarioRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+	}
 }

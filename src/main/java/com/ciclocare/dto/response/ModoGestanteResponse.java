@@ -19,6 +19,7 @@ public class ModoGestanteResponse {
 	private Integer semanaAtual;
 	private Integer semanasCompletas;
 	private Integer diasSemana;
+	private String faseGestacional;
 
 	private Integer diasGravidez;
 	private Integer meses;
@@ -30,4 +31,6 @@ public class ModoGestanteResponse {
 
 	private String mensagemPrincipal;
 	private String mensagemSecundaria;
+	private String mensagemFaseGestacao;
+
 }
